@@ -1,189 +1,83 @@
-Here’s a clean, beginner-friendly `README.md` file you can use in your GitHub repo. It clearly explains your project, how to run it, and **hides all your secret keys** by instructing users to create a `.env` file.
+<div align="center">
 
----
+# Vapi Voice Calling Prototype
 
-### ✅ Recommended Project Name:  
-```plaintext
-ai-voice-calling-assistant
-```
+**A small Flask experiment for initiating Vapi outbound calls from customer records.**
 
----
+</div>
 
+> **Status: prototype / not production ready.** The checked-in application contains a developer-specific Excel path, enables Flask debug mode, and should be reviewed before any deployment. Do not expose it to the public internet as-is.
 
-```markdown
-# 📞 AI Voice Calling Assistant for Customer Communication
+## What it does
 
-This project is a Flask-based backend that connects with [Vapi.ai](https://vapi.ai) and [Twilio](https://www.twilio.com/) to automate real-time voice calls. It reads customer data from an Excel file and passes relevant variables (like name, due amount, sentiment) into a smart AI assistant for personalized phone conversations.
+The single-file Flask app loads customer records from an Excel workbook, accepts a customer ID and E.164 phone number at `POST /initiate-call`, then sends an outbound call request to Vapi using configured assistant and phone-number IDs.
 
----
+The app currently reads its workbook path from a hard-coded Windows path in `app.py`. Configure it for your environment before running; see the setup notes below.
 
-## 🚀 Key Features
+## Repository contents
 
-- ✅ Read customer data from an Excel file
-- ✅ Initiate AI-powered voice calls using [Vapi.ai](https://vapi.ai)
-- ✅ Use [Twilio](https://twilio.com) for additional voice routing or fallback
-- ✅ Pass custom variables like `name`, `due_date`, `balance_due`, etc.
-- ✅ Simple JSON API: just call `/initiate-call` with a customer ID & phone number
-- ✅ Easy local deployment using Python + Flask
+- `app.py` — Flask route, Excel lookup, and Vapi call request.
 
----
+## Requirements
 
-## 🧠 Tech Stack
+The repository currently has no dependency manifest. Install the imports used by `app.py`:
 
-- **Python 3.x**
-- **Flask** for backend API
-- **Pandas** to parse Excel files
-- **Vapi.ai** for AI voice calling
-- **Twilio** (optional)
-- **MongoDB** for storing customer/session data
-- **ngrok** (for local testing webhooks)
-- `.env` for environment configs
+- Python 3.10+
+- Flask
+- pandas
+- openpyxl
+- requests
+- python-dotenv
 
----
+## Configuration
 
-## 🗂️ Folder Structure
+Create a local `.env` file (never commit real credentials):
 
-```bash
-project/
-├── app.py                # Main Flask backend
-├── customer_data.xlsx    # Excel file with customer info (example)
-├── .env                  # Your secret keys (excluded from GitHub)
-├── requirements.txt
-└── README.md
-```
-
----
-
-## 🔐 Environment Variables (Secrets)
-
-> **Never commit secrets to GitHub!**  
-> Create a `.env` file in your root folder like this:
-
-```env
-# Google & Excel
-GOOGLE_API_KEY=your-google-api-key
-EXCEL_FILE_PATH=C:/path/to/customer_data.xlsx
-
-# MongoDB
-MONGO_URI=mongodb://username:password@host/db?authSource=admin
-
-# Flask
-FLASK_APP_PORT=5001
-FLASK_DEBUG_MODE=True
-LOG_LEVEL=INFO
-
-# Twilio (optional)
-TWILIO_ACCOUNT_SID=your-account-sid
-TWILIO_AUTH_TOKEN=your-auth-token
-TWILIO_PHONE_NUMBER=+1XXXXXXXXXX
-
-# ngrok URL (for testing webhooks)
-NGROK_BASE_URL=https://your-ngrok-url.ngrok-free.app
-
-# Vapi.ai Credentials
+```dotenv
 VAPI_API_KEY=your-vapi-api-key
 VAPI_ASSISTANT_ID=your-assistant-id
 VAPI_PHONE_NUMBER_ID=your-phone-number-id
-
-# Optional Settings
-TARGET_CURRENCY_CODE=AED
-TARGET_CURRENCY_NAME=Dirhams
-AVAILABLE_PAYMENT_METHODS=UPI,Google Pay,Credit Card,Bank Transfer
 ```
 
----
+Edit `EXCEL_FILE_PATH` in `app.py` to point to a workbook containing the columns listed in `EXCEL_COLUMN_MAPPING`. The workbook may contain personal and financial data; keep it out of source control and restrict access.
 
-## ▶️ How to Run
+## Run locally
 
-1. **Clone the repo**
-   ```bash
-   git clone https://github.com/your-username/ai-voice-calling-assistant.git
-   cd ai-voice-calling-assistant
-   ```
+```bash
+python -m venv .venv
+# macOS / Linux
+source .venv/bin/activate
+# Windows PowerShell
+# .venv\Scripts\Activate.ps1
 
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+pip install Flask pandas openpyxl requests python-dotenv
+python app.py
+```
 
-3. **Add your `.env` file** with the variables above
+The development server listens on port `5001`.
 
-4. **Run the Flask app**
-   ```bash
-   python app.py
-   ```
+## API
 
-5. **Make a test API call** (via Postman, curl, or frontend):
-   ```json
-   POST /initiate-call
-   {
-     "customer_id": "1234",
-     "mobile_number": "+911234567890"
-   }
-   ```
+`POST /initiate-call`
 
----
-
-## 🧪 Example Excel Columns
-
-Make sure your Excel file includes columns like:
-
-| Customer ID | Name | Balance Due | Mobile Number | Due Date | Sentiment | Status |
-|-------------|------|-------------|----------------|----------|-----------|--------|
-| 1234        | John | ₹5000       | +911234567890  | 2025-06-30 | Negative | Overdue |
-
----
-
-## 💬 API: `/initiate-call`
-
-**Method:** `POST`  
-**Request Body:**
 ```json
 {
   "customer_id": "1234",
-  "mobile_number": "+911234567890"
+  "mobile_number": "+61412345678"
 }
 ```
 
-**Response:**
-```json
-{
-  "message": "Call initiated",
-  "call_id": "abc123456"
-}
-```
+The phone number must use E.164 format. The app returns the Vapi response and status code.
 
----
+## Known limitations
 
-## 🛡 Security Tip
+- No automated tests, dependency lockfile, or production server configuration is present.
+- The Excel file path is hard-coded and must be made configurable.
+- Flask debug mode is enabled in the local entry point; disable it outside local development.
+- The app logs customer details and request payloads to stdout; remove or redact personal data before any use with real customers.
+- The current call request uses a minimal payload and does not pass the loaded customer variables to Vapi.
+- Add authentication, request validation, rate limiting, consent controls, and safe error handling before exposing an API.
 
-> This project uses `.env` for secrets. Make sure `.env` is **added to your `.gitignore`** to prevent accidental exposure.
+## Banner
 
-```bash
-# .gitignore
-.env
-```
-
----
-
-## 🤝 Contributing
-
-Feel free to fork the repo and submit pull requests. Suggestions and issues are welcome!
-
----
-
-## 📄 License
-
-MIT License
-
----
-
-## ✨ Credits
-
-Built using:
-- [Vapi.ai](https://vapi.ai)
-- [Flask](https://flask.palletsprojects.com/)
-- [Twilio](https://www.twilio.com/)
-- [pandas](https://pandas.pydata.org/)
-```
-
+This README uses a typographic project header until a purpose-made visual asset is added. No unrelated image has been borrowed as a banner.
