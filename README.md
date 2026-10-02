@@ -1,3 +1,5 @@
+![Vapi Outbound Calling Prototype — PROTOTYPE · FLASK + VAPI](docs/images/portfolio-banner.svg)
+
 <div align="center">
 
 # Vapi Voice Calling Prototype
