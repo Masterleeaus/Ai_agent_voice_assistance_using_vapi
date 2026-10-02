@@ -8,6 +8,13 @@
 
 </div>
 
+## Product architecture and engineering highlights
+
+A focused voice-automation prototype that turns a customer record into an outbound Vapi call. It is a compact example of connecting an operational data source to a conversational telephony provider.
+
+- **Architecture:** A Flask endpoint accepts a customer ID and E.164 number, looks up the record in a workbook, then submits a call request to Vapi.
+- **Distinctive engineering:** The end-to-end request → customer lookup → voice-provider path is small enough to inspect and extend as a real integration exercise.
+
 > **Status: prototype / not production ready.** The checked-in application contains a developer-specific Excel path, enables Flask debug mode, and should be reviewed before any deployment. Do not expose it to the public internet as-is.
 
 ## What it does
